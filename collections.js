@@ -8,13 +8,13 @@
 
     var IDS = {
         NETFLIX: '213',
-        APPLE: '350',
         HBO: '49',
         MAX: '3186',
-        AMAZON: '1024',
         DISNEY: '2739',
         HULU: '453',
+        APPLE: '350',
         PARAMOUNT: '4330'
+        AMAZON: '1024',
     };
 
     // Порядок відображення кнопок (оновлено)
