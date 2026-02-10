@@ -2,8 +2,8 @@
     'use strict';
 
     /**
-     * STUDIOS MASTER (Unified) v2.3
-     * Compatibility Fix: ES5 Syntax (No backticks) & Safer Injection
+     * STUDIOS MASTER (Unified) v2.4
+     * Fix: Native Settings API Implementation + CSS Fixes
      */
 
     var IDS = {
@@ -205,7 +205,7 @@
     }
 
     // -----------------------------------------------------------------
-    // INJECTION & SETTINGS LOGIC
+    // START
     // -----------------------------------------------------------------
 
     function startPlugin() {
@@ -215,7 +215,18 @@
         Lampa.Component.add('studios_main', StudiosMain);
         Lampa.Component.add('studios_view', StudiosView);
 
-        // --- CSS ---
+        // Add settings parameter for each studio - NEW CORRECT WAY
+        Object.keys(SERVICE_CONFIGS).forEach(function(sid){
+            Lampa.SettingsApi.addParam({
+                component: 'studios_plugin', // Separate component name
+                param: 'studios_show_' + sid,
+                type: 'trigger',
+                name: SERVICE_CONFIGS[sid].title,
+                default: true
+            });
+        });
+
+        // Styles
         if (!$('#studios-unified-css').length) {
             $('body').append('' +
                 '<style id="studios-unified-css">' +
@@ -226,17 +237,21 @@
             );
         }
 
-        // --- MENU BUTTONS ---
-        function addMenuButtons() {
+        // Logic to update menu
+        function updateMenu() {
             var menu = $('.menu .menu__list').eq(0);
             if (!menu.length) return;
+
+            // Remove all existing plugin buttons to re-render fresh
+            menu.find('.menu__item[data-sid]').each(function(){
+                var sid = $(this).attr('data-sid');
+                if(SERVICE_CONFIGS[sid]) $(this).remove();
+            });
 
             Object.keys(SERVICE_CONFIGS).forEach(function (sid) {
                 if(!Lampa.Storage.get('studios_show_' + sid, true)) return; 
 
                 var conf = SERVICE_CONFIGS[sid];
-                if (menu.find('.menu__item[data-sid="' + sid + '"]').length) return;
-
                 var btn = $('<li class="menu__item selector" data-action="studios_action_' + sid + '" data-sid="' + sid + '">' +
                     '<div class="menu__ico">' + conf.icon + '</div>' +
                     '<div class="menu__text">' + conf.title + '</div>' +
@@ -249,63 +264,30 @@
             });
         }
 
-        // --- MANUAL SETTINGS INJECTION (INTERFACE PAGE) ---
+        // Add button to Settings Main Menu
         Lampa.Settings.listener.follow('open', function (e) {
-            
-            // Вставляємо налаштування прямо в розділ "Інтерфейс"
-            if (e.name == 'interface') {
-                var controller = e.body;
-                
-                // Додаємо розділювач, якщо його ще немає
-                if (!controller.find('.studios-divider').length) {
-                     controller.append('<div class="settings-param__title studios-divider" style="margin-top: 20px;"><span>Студії та колекції</span></div>');
-                }
+            if (e.name == 'main') {
+                var btn = $('<div class="settings-param selector" data-type="button" data-static="true" data-name="studios_plugin">' +
+                    '<div class="settings-param__name">Studios</div>' +
+                    '<div class="settings-param__descr">Налаштування відображення студій</div>' +
+                '</div>');
 
-                Object.keys(SERVICE_CONFIGS).forEach(function(sid){
-                    var conf = SERVICE_CONFIGS[sid];
-                    var isActive = Lampa.Storage.get('studios_show_' + sid, true);
-
-                    // Перевіряємо, чи вже додали, щоб не дублювати
-                    if (controller.find('[data-name="studios_show_' + sid + '"]').length) return;
-
-                    var item = $('<div class="settings-param selector" data-type="toggle" data-name="studios_show_' + sid + '">' +
-                        '<div class="settings-param__name">' + conf.title + '</div>' +
-                        '<div class="settings-param__value">' + (isActive ? 'Так' : 'Ні') + '</div>' +
-                        '<div class="settings-param__status ' + (isActive ? 'active' : '') + '"></div>' +
-                    '</div>');
-
-                    item.on('hover:enter', function () {
-                        var current = Lampa.Storage.get('studios_show_' + sid, true);
-                        var next = !current;
-                        
-                        Lampa.Storage.set('studios_show_' + sid, next);
-                        
-                        item.find('.settings-param__value').text(next ? 'Так' : 'Ні');
-                        if(next) item.find('.settings-param__status').addClass('active');
-                        else item.find('.settings-param__status').removeClass('active');
-                    });
-
-                    controller.append(item);
+                btn.on('hover:enter', function () {
+                    Lampa.Settings.open('studios_plugin');
                 });
+
+                e.body.append(btn);
             }
         });
 
-        // --- INIT ---
-        Lampa.Listener.follow('app', function(e){
-            if(e.type == 'resize' || e.type == 'ready') addMenuButtons();
+        // Update menu when settings are closed
+        Lampa.Settings.listener.follow('close', function(){
+            updateMenu();
         });
-        
-        if (window.appready) addMenuButtons();
 
-        Lampa.Settings.listener.follow('close', function(e){
-             var menu = $('.menu .menu__list').eq(0);
-             if(menu.length) {
-                 Object.keys(SERVICE_CONFIGS).forEach(function(sid){
-                     menu.find('.menu__item[data-sid="' + sid + '"]').remove();
-                 });
-                 addMenuButtons();
-             }
-        });
+        // Init
+        if (window.appready) updateMenu();
+        else Lampa.Listener.follow('app', function (e) { if (e.type == 'ready') updateMenu(); });
     }
 
     if (!window.plugin_studios_master_ready) startPlugin();
