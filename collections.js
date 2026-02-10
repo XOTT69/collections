@@ -2,22 +2,22 @@
     'use strict';
 
     /**
-     * STUDIOS MASTER (Custom Order)
+     * STUDIOS MASTER (Fixed Order)
      * Order: 1.Netflix, 2.HBO, 3.Disney, 4.Star, 5.Apple, 6.Paramount, 7.Prime
      */
 
     var IDS = {
         NETFLIX: '213',
+        APPLE: '350',
         HBO: '49',
         MAX: '3186',
+        AMAZON: '1024',
         DISNEY: '2739',
         HULU: '453',
-        APPLE: '350',
         PARAMOUNT: '4330'
-        AMAZON: '1024',
     };
 
-    // Порядок відображення кнопок (оновлено)
+    // ТОЧНИЙ ПОРЯДОК (Netflix -> HBO -> Disney -> Star -> Apple -> Paramount -> Prime)
     var MENU_ORDER = ['netflix', 'hbo', 'disney', 'hulu', 'apple', 'paramount', 'amazon'];
 
     var SERVICE_CONFIGS = {
@@ -192,7 +192,6 @@
     // -----------------------------------------------------------------
 
     function startPlugin() {
-        if (window.plugin_studios_master_ready) return;
         window.plugin_studios_master_ready = true;
 
         Lampa.Component.add('studios_main', StudiosMain);
@@ -214,12 +213,16 @@
             var menu = $('.menu .menu__list').eq(0);
             if (!menu.length) return;
 
-            // Використовуємо MENU_ORDER для ітерації
+            // 1. Примусове очищення старих кнопок плагіна (щоб оновити порядок)
+            // Видаляємо тільки кнопки з data-sid, які є в нашому конфігу
+            MENU_ORDER.forEach(function(sid) {
+                menu.find('.menu__item[data-sid="' + sid + '"]').remove();
+            });
+
+            // 2. Додавання кнопок в правильному порядку
             MENU_ORDER.forEach(function (sid) {
                 var conf = SERVICE_CONFIGS[sid];
                 if (!conf) return; 
-
-                if (menu.find('.menu__item[data-sid="' + sid + '"]').length) return;
 
                 var btn = $('<li class="menu__item selector" data-action="studios_action_' + sid + '" data-sid="' + sid + '">' +
                     '<div class="menu__ico">' + conf.icon + '</div>' +
@@ -239,5 +242,5 @@
         });
     }
 
-    if (!window.plugin_studios_master_ready) startPlugin();
+    startPlugin();
 })();
