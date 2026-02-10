@@ -17,7 +17,7 @@
         PARAMOUNT: '4330'
     };
 
-    // Порядок відображення кнопок
+    // Порядок відображення кнопок (оновлено)
     var MENU_ORDER = ['netflix', 'hbo', 'disney', 'hulu', 'apple', 'paramount', 'amazon'];
 
     var SERVICE_CONFIGS = {
