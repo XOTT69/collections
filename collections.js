@@ -2,12 +2,12 @@
     'use strict';
 
     /**
-     * STUDIOS MASTER (Unified) v2.0
-     * Optimized by: Perplexity AI
+     * STUDIOS MASTER (Unified) v2.1
+     * Fixed Settings Display
      */
 
     // -----------------------------------------------------------------
-    // 1. CONSTANTS & CONFIG (Оптимізація та Рефакторинг)
+    // 1. CONSTANTS & CONFIG
     // -----------------------------------------------------------------
     
     var IDS = {
@@ -34,7 +34,7 @@
                 { "title": "В тренді", "url": "discover/tv", "params": { "with_networks": IDS.NETFLIX, "sort_by": "popularity.desc" } },
                 { "title": "Тільки на Netflix (Exclusives)", "url": "discover/tv", "params": { "with_networks": IDS.NETFLIX, "with_status": "0|1|2|3", "sort_by": "vote_average.desc", "vote_count.gte": "500" } },
                 { "title": "K-Dramas (Корея)", "url": "discover/tv", "params": { "with_networks": IDS.NETFLIX, "with_original_language": "ko", "sort_by": "popularity.desc" } },
-                { "title": "Аніме (Японія)", "url": "discover/tv", "params": { "with_networks": IDS.NETFLIX, "with_genres": "16", "with_original_language": "ja", "sort_by": "popularity.desc" } }, // Додано language:ja
+                { "title": "Аніме (Японія)", "url": "discover/tv", "params": { "with_networks": IDS.NETFLIX, "with_genres": "16", "with_original_language": "ja", "sort_by": "popularity.desc" } },
                 { "title": "Документальне", "url": "discover/movie", "params": { "with_companies": IDS.NETFLIX, "with_genres": "99", "sort_by": "release_date.desc" } }
             ]
         },
@@ -109,7 +109,7 @@
     };
 
     // -----------------------------------------------------------------
-    // 2. COMPONENTS (Логіка відображення)
+    // 2. COMPONENTS
     // -----------------------------------------------------------------
 
     function StudiosMain(object) {
@@ -129,7 +129,6 @@
                     var data = status.data[key];
                     if (data && data.results && data.results.length) {
                         var cat = categories[parseInt(key)];
-                        // CSS FIX: Не ставимо тут жорсткий стиль, використаємо клас
                         Lampa.Utils.extendItemsParams(data.results, { 
                             style: { name: 'wide', card_class: 'card-studio-wide' } 
                         });
@@ -154,7 +153,7 @@
             categories.forEach(function (cat, index) {
                 var params = [];
                 params.push('api_key=' + Lampa.TMDB.key());
-                params.push('language=' + Lampa.Storage.get('language', 'uk')); // Мова інтерфейсу Лампи
+                params.push('language=' + Lampa.Storage.get('language', 'uk'));
 
                 if (cat.params) {
                     for (var key in cat.params) {
@@ -217,7 +216,6 @@
         comp.create = function () {
             var _this = this;
             network.silent(buildUrl(1), function (json) {
-                // CSS FIX:
                 if(json.results) {
                      Lampa.Utils.extendItemsParams(json.results, { 
                         style: { name: 'wide', card_class: 'card-studio-wide' } 
@@ -242,7 +240,7 @@
     }
 
     // -----------------------------------------------------------------
-    // 3. INJECTION (Кнопки та Налаштування)
+    // 3. INJECTION
     // -----------------------------------------------------------------
 
     function startPlugin() {
@@ -250,14 +248,14 @@
         window.plugin_studios_master_ready = true;
 
         // --- ДОДАВАННЯ НАЛАШТУВАНЬ В МЕНЮ ЛАМПИ ---
-        // Створюємо параметри, щоб користувач міг їх бачити в Settings > Interface
         Object.keys(SERVICE_CONFIGS).forEach(function(sid){
             Lampa.SettingsApi.addParam({
-                component: 'interface',
+                component: 'interface', // Ключ зберігання
+                page: 'interface',      // <--- ВАЖЛИВО! Вказуємо сторінку "Інтерфейс"
                 param: 'studios_show_' + sid,
                 type: 'trigger',
                 name: 'Студії: ' + SERVICE_CONFIGS[sid].title,
-                default: true // За замовчуванням увімкнено
+                default: true 
             });
         });
 
@@ -265,26 +263,24 @@
         Lampa.Component.add('studios_main', StudiosMain);
         Lampa.Component.add('studios_view', StudiosView);
 
-        // --- CSS FIX (RESPONSIVE) ---
+        // --- CSS FIX ---
         if (!$('#studios-unified-css').length) {
             $('body').append(`
                 <style id="studios-unified-css">
-                    /* Стандартний розмір для wide */
                     .studios_main .card--wide, 
                     .studios_view .card--wide { 
                         width: 18em; 
                     }
-                    /* Адаптивність для мобільних/планшетів */
                     @media screen and (max-width: 768px) {
                         .studios_main .card--wide, 
                         .studios_view .card--wide { 
-                            width: 46%; /* 2 колонки */
+                            width: 46%;
                         }
                     }
                      @media screen and (max-width: 480px) {
                         .studios_main .card--wide, 
                         .studios_view .card--wide { 
-                            width: 100%; /* 1 колонка */
+                            width: 100%;
                         }
                     }
                 </style>
@@ -298,7 +294,7 @@
             Object.keys(SERVICE_CONFIGS).forEach(function (sid) {
                 var conf = SERVICE_CONFIGS[sid];
 
-                // 1. SETTINGS CHECK: Перевіряємо, чи дозволив користувач цю студію
+                // 1. SETTINGS CHECK
                 if(!Lampa.Storage.get('studios_show_' + sid, true)) return;
 
                 // 2. DUPLICATE CHECK
@@ -322,7 +318,6 @@
             });
         }
 
-        // --- ЗАМІНА SETINTERVAL НА LISTENER ---
         if (window.appready) {
             addMenuButtons();
         } else {
@@ -331,20 +326,17 @@
             });
         }
         
-        // Слухаємо подію рендеру меню (найнадійніший спосіб без таймера)
-        // В Лампі немає прям ідеальної події "menu rendered", але це стандартний підхід:
+        // Слухач на ресайз/рендер
         Lampa.Listener.follow('app', function(e){
             if(e.type == 'resize' || e.type == 'ready') {
                 addMenuButtons();
             }
         });
         
-        // Додатковий хук на відкриття налаштувань, щоб оновити меню, якщо користувач щось вимкнув
+        // Оновлення меню при закритті налаштувань
         Lampa.Settings.listener.follow('close', function(e){
-            // Якщо закрили налаштування - перевіримо меню, може треба прибрати кнопку
              var menu = $('.menu .menu__list').eq(0);
              if(menu.length) {
-                 // Найпростіший спосіб оновити - видалити наші кнопки і додати заново
                  Object.keys(SERVICE_CONFIGS).forEach(function(sid){
                      menu.find('.menu__item[data-sid="' + sid + '"]').remove();
                  });
