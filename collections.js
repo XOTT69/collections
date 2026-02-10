@@ -2,8 +2,8 @@
     'use strict';
 
     /**
-     * STUDIOS MASTER (Final Clean Version)
-     * Services: Netflix, Apple, HBO, Amazon, Disney, Hulu(Renamed), Paramount
+     * STUDIOS MASTER (Custom Order)
+     * Order: 1.Netflix, 2.HBO, 3.Disney, 4.Star, 5.Apple, 6.Paramount, 7.Prime
      */
 
     var IDS = {
@@ -16,6 +16,9 @@
         HULU: '453',
         PARAMOUNT: '4330'
     };
+
+    // Порядок відображення кнопок
+    var MENU_ORDER = ['netflix', 'hbo', 'disney', 'hulu', 'apple', 'paramount', 'amazon'];
 
     var SERVICE_CONFIGS = {
         'netflix': {
@@ -30,15 +33,6 @@
                 { "title": "Документальне", "url": "discover/movie", "params": { "with_companies": IDS.NETFLIX, "with_genres": "99", "sort_by": "release_date.desc" } }
             ]
         },
-        'apple': {
-            title: 'Apple TV+',
-            icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>',
-            categories: [
-                { "title": "Новинки Apple TV+", "url": "discover/tv", "params": { "with_watch_providers": "350", "watch_region": "UA", "sort_by": "first_air_date.desc", "first_air_date.lte": "{current_date}", "vote_count.gte": "5" } },
-                { "title": "Sci-Fi", "url": "discover/tv", "params": { "with_watch_providers": "350", "watch_region": "UA", "with_genres": "10765", "sort_by": "popularity.desc" } },
-                { "title": "Apple Films", "url": "discover/movie", "params": { "with_watch_providers": "350", "watch_region": "UA", "sort_by": "release_date.desc" } }
-            ]
-        },
         'hbo': {
             title: 'HBO / Max',
             icon: '<svg width="24px" height="24px" viewBox="0 0 24 24" fill="currentColor"><path d="M7.042 16.896H4.414v-3.754H2.708v3.754H.01L0 7.22h2.708v3.6h1.706v-3.6h2.628zm12.043.046C21.795 16.94 24 14.689 24 11.978a4.89 4.89 0 0 0-4.915-4.92c-2.707-.002-4.09 1.991-4.432 2.795.003-1.207-1.187-2.632-2.58-2.634H7.59v9.674l4.181.001c1.686 0 2.886-1.46 2.888-2.713.385.788 1.72 2.762 4.427 2.76zm-7.665-3.936c.387 0 .692.382.692.817 0 .435-.305.817-.692.817h-1.33v-1.634zm.005-3.633c.387 0 .692.382.692.817 0 .436-.305.818-.692.818h-1.33V9.373zm1.77 2.607c.305-.039.813-.387.992-.61-.063.276-.068 1.074.006 1.35-.204-.314-.688-.701-.998-.74zm3.43 0a2.462 2.462 0 1 1 4.924 0 2.462 2.462 0 0 1-4.925 0zm2.462 1.936a1.936 1.936 0 1 0 0-3.872 1.936 1.936 0 0 0 0 3.872z"/></svg>',
@@ -47,14 +41,6 @@
                 { "title": "Ексклюзиви Max", "url": "discover/tv", "params": { "with_networks": IDS.MAX, "sort_by": "popularity.desc" } },
                 { "title": "Світ DC", "url": "discover/movie", "params": { "with_companies": "174", "with_keywords": "9715", "sort_by": "release_date.desc" } },
                 { "title": "Золота колекція", "url": "discover/tv", "params": { "with_networks": IDS.HBO, "vote_average.gte": "8.0", "vote_count.gte": "500", "sort_by": "vote_average.desc" } }
-            ]
-        },
-        'amazon': {
-            title: 'Prime Video',
-            icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.787 15.292c-.336-.43-2.222-.204-3.069-.103-.257.031-.296-.193-.065-.356 1.504-1.056 3.968-.75 4.255-.397.288.357-.076 2.827-1.485 4.007-.217.18-.423.084-.327-.155.317-.792 1.027-2.566.69-2.996"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>',
-            categories: [
-                { "title": "Amazon Originals", "url": "discover/tv", "params": { "with_networks": IDS.AMAZON, "sort_by": "popularity.desc" } },
-                { "title": "The Boys & Superheroes", "url": "discover/tv", "params": { "with_networks": IDS.AMAZON, "with_genres": "10765", "sort_by": "vote_average.desc" } }
             ]
         },
         'disney': {
@@ -70,8 +56,17 @@
             title: 'Star',
             icon: '<svg viewBox="0 0 24 24" fill="#3DBB3D"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>',
             categories: [
-                { "title": "Оригінальні серіали", "url": "discover/tv", "params": { "with_networks": IDS.HULU, "sort_by": "popularity.desc" } },
+                { "title": "Star Originals", "url": "discover/tv", "params": { "with_networks": IDS.HULU, "sort_by": "popularity.desc" } },
                 { "title": "Драми та Трилери", "url": "discover/tv", "params": { "with_networks": IDS.HULU, "with_genres": "18,9648", "sort_by": "vote_average.desc" } }
+            ]
+        },
+        'apple': {
+            title: 'Apple TV+',
+            icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>',
+            categories: [
+                { "title": "Новинки Apple TV+", "url": "discover/tv", "params": { "with_watch_providers": "350", "watch_region": "UA", "sort_by": "first_air_date.desc", "first_air_date.lte": "{current_date}", "vote_count.gte": "5" } },
+                { "title": "Sci-Fi", "url": "discover/tv", "params": { "with_watch_providers": "350", "watch_region": "UA", "with_genres": "10765", "sort_by": "popularity.desc" } },
+                { "title": "Apple Films", "url": "discover/movie", "params": { "with_watch_providers": "350", "watch_region": "UA", "sort_by": "release_date.desc" } }
             ]
         },
         'paramount': {
@@ -80,6 +75,14 @@
             categories: [
                 { "title": "Paramount+ Originals", "url": "discover/tv", "params": { "with_networks": IDS.PARAMOUNT, "sort_by": "popularity.desc" } },
                 { "title": "Йеллоустоун", "url": "discover/tv", "params": { "with_networks": IDS.PARAMOUNT + '|318', "with_genres": "37", "sort_by": "popularity.desc" } }
+            ]
+        },
+        'amazon': {
+            title: 'Prime Video',
+            icon: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.787 15.292c-.336-.43-2.222-.204-3.069-.103-.257.031-.296-.193-.065-.356 1.504-1.056 3.968-.75 4.255-.397.288.357-.076 2.827-1.485 4.007-.217.18-.423.084-.327-.155.317-.792 1.027-2.566.69-2.996"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>',
+            categories: [
+                { "title": "Amazon Originals", "url": "discover/tv", "params": { "with_networks": IDS.AMAZON, "sort_by": "popularity.desc" } },
+                { "title": "The Boys & Superheroes", "url": "discover/tv", "params": { "with_networks": IDS.AMAZON, "with_genres": "10765", "sort_by": "vote_average.desc" } }
             ]
         }
     };
@@ -211,8 +214,11 @@
             var menu = $('.menu .menu__list').eq(0);
             if (!menu.length) return;
 
-            Object.keys(SERVICE_CONFIGS).forEach(function (sid) {
+            // Використовуємо MENU_ORDER для ітерації
+            MENU_ORDER.forEach(function (sid) {
                 var conf = SERVICE_CONFIGS[sid];
+                if (!conf) return; 
+
                 if (menu.find('.menu__item[data-sid="' + sid + '"]').length) return;
 
                 var btn = $('<li class="menu__item selector" data-action="studios_action_' + sid + '" data-sid="' + sid + '">' +
